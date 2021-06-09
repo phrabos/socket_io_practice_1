@@ -1,19 +1,28 @@
 import React, { useRef, useEffect } from "react";
 import Matter from "matter-js";
 import * as Tone from 'tone';
+import { io } from 'socket.io-client';
+const socket = io('http://localhost:8000')
 
 const Scene = () => {
   // const [scene, setScene] = useState();
   const sceneRef = useRef(null);
   const engineRef = useRef(null);
 
+
+
   useEffect(() => {
+    socket.on('emit collision', data => {
+      console.log(data);
+    })
+
     let Engine = Matter.Engine;
     let Render = Matter.Render;
     let World = Matter.World;
     let Bodies = Matter.Bodies;
     let Mouse = Matter.Mouse;
     let MouseConstraint = Matter.MouseConstraint;
+
 
     engineRef.current = Engine.create({});
     engineRef.current.gravity.y = 1.3;
@@ -86,6 +95,7 @@ const Scene = () => {
           //   synth2.triggerAttackRelease('F4', '4n');
           //   console.log('b', b)
           // }
+          socket.emit('collision', 'collided')
         } 
         // let b = event.pairs[1] ? event.pairs[1] : null;
         // let b = event.pairs[1] ? event.pairs[1] : null
