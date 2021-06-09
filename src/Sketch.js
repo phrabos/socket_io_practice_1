@@ -1,16 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import P5 from 'p5';
 import { io } from 'socket.io-client';
-const socket = io('https://p5sketch-ph.herokuapp.com/', {
-    withCredentials: true,
-    transportOptions: {
-        polling: {
-            extraHeaders: {
-                "custom-header": "aaaa"
-            }
-        }
-    }
-});
+const socket = io('https://p5sketch-ph.herokuapp.com/' 
+// {
+//     withCredentials: true,
+//     transportOptions: {
+//         polling: {
+//             extraHeaders: {
+//                 "custom-header": "aaaa"
+//             }
+//         }
+//     }
+// }
+);
 
 
 export const SketchComponent = () => {
