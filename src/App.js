@@ -1,9 +1,11 @@
 import './App.css';
-import { SketchComponent } from './Sketch';
+import Scene from './scene';
+// import { SketchComponent } from './Sketch';
 
 function App() {
   return (
-    <SketchComponent />
+    // <SketchComponent />
+    <Scene />
   );
 }
 

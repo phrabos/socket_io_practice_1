@@ -56,7 +56,7 @@ export const SketchComponent = () => {
             };
 
             socket.emit('transmit mouse', data);
-            console.log(socket.emit('transmit mouse', data));
+
         }
 
     };
