@@ -29,8 +29,8 @@ const Scene = () => {
       element: sceneRef.current,
       engine: engineRef.current,
       options: {
-        width: 800,
-        height: 800,
+        width: 600,
+        height: 600,
         wireframes: false
       }
     });
@@ -41,7 +41,7 @@ const Scene = () => {
       // walls
       Bodies.rectangle(200, 0, 600, 50, { isStatic: true }),
       Bodies.rectangle(200, 600, 600, 50, { isStatic: true }),
-      // Bodies.rectangle(260, 300, 50, 600, { isStatic: true }),
+      Bodies.rectangle(500, 250, 50, 600, { isStatic: true }),
       Bodies.rectangle(0, 300, 50, 600, { isStatic: true })
     ]);
 
@@ -62,7 +62,7 @@ const Scene = () => {
       World.add(engineRef.current.world, mouseConstraint);
   
       Matter.Events.on(mouseConstraint, "mouseup", function(event) {
-        // console.log(event);
+        console.log('mouseup event', event);
         // console.log('outgoing-down', event.mouse.mousedownPosition);
         socket.emit('ball dropped', { x:event.mouse.mouseupPosition.x, y:event.mouse.mouseupPosition.y})
 
@@ -70,7 +70,8 @@ const Scene = () => {
       Matter.Events.on(mouseConstraint, "enddrag", function(event) {
         // console.log(event);
         // console.log('outgoing-down', event.mouse.mousedownPosition);
-        socket.emit('ball move', { id: 1, x:210, y:100})
+        console.log('event', event)
+        socket.emit('ball move', { id: 1, x:event.body.position.x, y:event.body.position.y})
       });
       
       Matter.Runner.run(engineRef.current);
@@ -78,16 +79,19 @@ const Scene = () => {
       Render.run(render);
 
       socket.on('emit drop', data => {
-        // console.log('incoming', data)
+        console.log('incoming', data)
         // World.add(engineRef.current.world, Bodies.circle(50, 50, 30, { restitution: 0.7 }));
-        // World.add(engineRef.current.world, Bodies.circle(data.x, data.y, 30, { restitution: 0.7 }));
+        World.add(engineRef.current.world, Bodies.circle(data.x, data.y, 30, { restitution: 0.7 }));
       })
       socket.on('moved ball', data => {
         // console.log('incoming', data)
         // World.add(engineRef.current.world, Bodies.circle(50, 50, 30, { restitution: 0.7 }));
-        const circle = engineRef.current.world.bodies[3];
+        console.log(data);
+        const circle = engineRef.current.world.bodies.find(el => el.id === 1);
+        console.log('circle', circle)
         circle.position.x = data.x;
         circle.position.y = data.y;
+        console.log('circle', circle)
 
         
         
