@@ -1,28 +1,26 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useContext } from "react";
+import { SocketContext } from './App';
 import Matter from "matter-js";
 import * as Tone from 'tone';
-import { io } from 'socket.io-client';
-const socket = io('http://localhost:8000')
+// import { io } from 'socket.io-client';
+// const socket = io('http://localhost:8000')
 
 const Scene = () => {
   // const [scene, setScene] = useState();
+  const socket = useContext(SocketContext);
   const sceneRef = useRef(null);
   const engineRef = useRef(null);
+  // const [response, setResponse] = useState('');
 
+  let Engine = Matter.Engine;
+  let Render = Matter.Render;
+  let World = Matter.World;
+  let Bodies = Matter.Bodies;
+  let Mouse = Matter.Mouse;
+  let MouseConstraint = Matter.MouseConstraint;
 
 
   useEffect(() => {
-    socket.on('emit collision', data => {
-      console.log(data);
-    })
-
-    let Engine = Matter.Engine;
-    let Render = Matter.Render;
-    let World = Matter.World;
-    let Bodies = Matter.Bodies;
-    let Mouse = Matter.Mouse;
-    let MouseConstraint = Matter.MouseConstraint;
-
 
     engineRef.current = Engine.create({});
     engineRef.current.gravity.y = 1.3;
@@ -63,16 +61,22 @@ const Scene = () => {
   
       World.add(engineRef.current.world, mouseConstraint);
   
-      // Matter.Events.on(mouseConstraint, "mousedown", function(event) {
-      //   World.add(engine.world, Bodies.circle(150, 50, 30, { restitution: 0.7 }));
-      // });
+      Matter.Events.on(mouseConstraint, "mousedown", function(event) {
+        socket.emit('ball dropped', 'dropped')
+      });
   
       Matter.Runner.run(engineRef.current);
   
       Render.run(render);
-      
 
-  }, []);
+      socket.on('emit drop', data => {
+        World.add(engineRef.current.world, Bodies.circle(150, 50, 30, { restitution: 0.7 }));
+      })
+      
+    }, []);
+
+    
+
 
   const handleClick = async () => {
     console.log('clicked');
@@ -95,7 +99,7 @@ const Scene = () => {
           //   synth2.triggerAttackRelease('F4', '4n');
           //   console.log('b', b)
           // }
-          socket.emit('collision', 'collided')
+
         } 
         // let b = event.pairs[1] ? event.pairs[1] : null;
         // let b = event.pairs[1] ? event.pairs[1] : null
@@ -109,7 +113,7 @@ const Scene = () => {
     <>
       <button onClick={handleClick}>start synth</button>
       <div ref={sceneRef} />
-    </>
+      </>
   );
 
 }
