@@ -5,13 +5,13 @@ import Matter from "matter-js";
 // import { io } from 'socket.io-client';
 // const socket = io('http://localhost:8000')
 
-const Scene = () => {
+const Scene = ({room, setLanding}) => {
   // const [scene, setScene] = useState();
   const socket = useContext(SocketContext);
   const sceneRef = useRef(null);
   const engineRef = useRef(null);
   // const [response, setResponse] = useState('');
-
+  
   let Engine = Matter.Engine;
   let Render = Matter.Render;
   // let World = Matter.World;
@@ -21,9 +21,9 @@ const Scene = () => {
   let Composite = Matter.Composite;
 
   useEffect(() => {
-
+    
     engineRef.current = Engine.create({});
-    engineRef.current.gravity.y = 0;
+    engineRef.current.gravity.y = 1;
 
     let render = Render.create({
       element: sceneRef.current,
@@ -31,7 +31,8 @@ const Scene = () => {
       options: {
         width: 800,
         height: 800,
-        wireframes: false
+        wireframes: false,
+        // background:'#F8B195',
       }
     });
 
@@ -67,7 +68,7 @@ const Scene = () => {
       Matter.Events.on(mouseConstraint, "mouseup", function(event) {
         // console.log(event);
         // console.log('outgoing-down', event.mouse.mousedownPosition);
-        // socket.emit('ball dropped', { x:event.mouse.mouseupPosition.x, y:event.mouse.mouseupPosition.y})
+        socket.emit('ball dropped', room, {x: event.mouse.mouseupPosition.x, y: event.mouse.mouseupPosition.y})
 
       });
       
@@ -89,29 +90,27 @@ const Scene = () => {
       Render.run(render);
 
       socket.on('emit drop', data => {
-        // console.log('incoming', data)
-        // Composite.add(engineRef.current.world, Bodies.circle(50, 50, 30, { restitution: 0.7 }));
-        // Composite.add(engineRef.current.world, Bodies.circle(data.x, data.y, 30, { restitution: 0.7 }));
+        console.log(data)
+        Composite.add(engineRef.current.world, Bodies.circle(data.x, data.y, 30, { restitution: 0.7 }));
       })
       socket.on('ball move', data => {
-          const circle = engineRef.current.world.bodies[3];
-          circle.position.x = data.x;
-          circle.position.y = data.y;
-          circle.frictionAir = 1;
-          console.log(data.x, data.y)
+          // const circle = engineRef.current.world.bodies[3];
+          // circle.position.x = data.x;
+          // circle.position.y = data.y;
+          // circle.frictionAir = 1;
+          // console.log(data.x, data.y)
         
       
-      })
-       
-
-        
-        
+      }) 
       // console.log(engineRef.current)
     }, []);
     
     
 
-
+  const handleDisconnect =()=>{
+    socket.emit('leave')
+    setLanding(true)
+  }
   // const handleClick = async () => {
   //   console.log('clicked');
   //   // const synth = new Tone.Synth().toDestination();
@@ -145,7 +144,7 @@ const Scene = () => {
   
   return( 
     <>
-      {/* <button onClick={handleClick}>start synth</button> */}
+      <button onClick={handleDisconnect}>leave</button> 
       <div ref={sceneRef} />
       </>
   );
