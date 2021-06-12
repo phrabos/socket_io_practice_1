@@ -29,10 +29,9 @@ const Scene = ({room, setLanding}) => {
       element: sceneRef.current,
       engine: engineRef.current,
       options: {
-        width: 800,
-        height: 800,
-        wireframes: false,
-        // background:'#F8B195',
+        width: 600,
+        height: 600,
+        wireframes: false
       }
     });
 
@@ -44,7 +43,7 @@ const Scene = ({room, setLanding}) => {
       // walls
       Bodies.rectangle(200, 0, 600, 50, { isStatic: true }),
       Bodies.rectangle(200, 600, 600, 50, { isStatic: true }),
-      // Bodies.rectangle(260, 300, 50, 600, { isStatic: true }),
+      Bodies.rectangle(500, 250, 50, 600, { isStatic: true }),
       Bodies.rectangle(0, 300, 50, 600, { isStatic: true })
     ]);
 
@@ -66,7 +65,7 @@ const Scene = ({room, setLanding}) => {
         Composite.add(engineRef.current.world, mouseConstraint);
   
       Matter.Events.on(mouseConstraint, "mouseup", function(event) {
-        // console.log(event);
+        console.log('mouseup event', event);
         // console.log('outgoing-down', event.mouse.mousedownPosition);
         socket.emit('ball dropped', room, {x: event.mouse.mouseupPosition.x, y: event.mouse.mouseupPosition.y})
 
@@ -79,9 +78,11 @@ const Scene = ({room, setLanding}) => {
         socket.emit('ball move', {x: event.body.position.x, y: event.body.position.y})
       });
       Matter.Events.on(mouseConstraint, "enddrag", function(event) {
+
         // console.log(event)
         // console.log('outgoing-down', event.mouse.mousedownPosition)
         socket.emit('ball move', {x: event.body.position.x, y: event.body.position.y})
+
       });
       
 
@@ -90,6 +91,7 @@ const Scene = ({room, setLanding}) => {
       Render.run(render);
 
       socket.on('emit drop', data => {
+
         console.log(data)
         Composite.add(engineRef.current.world, Bodies.circle(data.x, data.y, 30, { restitution: 0.7 }));
       })
