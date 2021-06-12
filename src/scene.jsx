@@ -5,25 +5,25 @@ import Matter from "matter-js";
 // import { io } from 'socket.io-client';
 // const socket = io('http://localhost:8000')
 
-const Scene = () => {
+const Scene = ({room, setLanding}) => {
   // const [scene, setScene] = useState();
   const socket = useContext(SocketContext);
   const sceneRef = useRef(null);
   const engineRef = useRef(null);
   // const [response, setResponse] = useState('');
-
+  
   let Engine = Matter.Engine;
   let Render = Matter.Render;
-  let World = Matter.World;
+  // let World = Matter.World;
   let Bodies = Matter.Bodies;
   let Mouse = Matter.Mouse;
   let MouseConstraint = Matter.MouseConstraint;
-
+  let Composite = Matter.Composite;
 
   useEffect(() => {
-
+    
     engineRef.current = Engine.create({});
-    engineRef.current.gravity.y = 1.3;
+    engineRef.current.gravity.y = 1;
 
     let render = Render.create({
       element: sceneRef.current,
@@ -35,9 +35,11 @@ const Scene = () => {
       }
     });
 
-    let ballA = Bodies.circle(210, 100, 10, { restitution: 0.5 });
+    let ballA = Bodies.circle(210, 100, 50, { 
+      restitution: 0.5,
+    });
     // let ballB = Bodies.circle(110, 50, 10, { restitution: 0.5 });
-    World.add(engineRef.current.world, [
+    Composite.add(engineRef.current.world, [
       // walls
       Bodies.rectangle(200, 0, 600, 50, { isStatic: true }),
       Bodies.rectangle(200, 600, 600, 50, { isStatic: true }),
@@ -45,7 +47,7 @@ const Scene = () => {
       Bodies.rectangle(0, 300, 50, 600, { isStatic: true })
     ]);
 
-    World.add(engineRef.current.world, [ballA]);
+    Composite.add(engineRef.current.world, [ballA]);
 
         // add mouse control
         let mouse = Mouse.create(render.canvas),
@@ -59,50 +61,58 @@ const Scene = () => {
           }
         });
   
-      World.add(engineRef.current.world, mouseConstraint);
+      
+        Composite.add(engineRef.current.world, mouseConstraint);
   
       Matter.Events.on(mouseConstraint, "mouseup", function(event) {
         console.log('mouseup event', event);
         // console.log('outgoing-down', event.mouse.mousedownPosition);
-        socket.emit('ball dropped', { x:event.mouse.mouseupPosition.x, y:event.mouse.mouseupPosition.y})
+        socket.emit('ball dropped', room, {x: event.mouse.mouseupPosition.x, y: event.mouse.mouseupPosition.y})
 
       });
+      
+
+      Matter.Events.on(mouseConstraint, "startdrag", function(event) {
+        // console.log(event)
+        // console.log('outgoing-down', event.mouse.mousedownPosition)
+        socket.emit('ball move', {x: event.body.position.x, y: event.body.position.y})
+      });
       Matter.Events.on(mouseConstraint, "enddrag", function(event) {
-        // console.log(event);
-        // console.log('outgoing-down', event.mouse.mousedownPosition);
-        console.log('event', event)
-        socket.emit('ball move', { id: 1, x:event.body.position.x, y:event.body.position.y})
+
+        // console.log(event)
+        // console.log('outgoing-down', event.mouse.mousedownPosition)
+        socket.emit('ball move', {x: event.body.position.x, y: event.body.position.y})
+
       });
       
+
       Matter.Runner.run(engineRef.current);
   
       Render.run(render);
 
       socket.on('emit drop', data => {
-        console.log('incoming', data)
-        // World.add(engineRef.current.world, Bodies.circle(50, 50, 30, { restitution: 0.7 }));
-        World.add(engineRef.current.world, Bodies.circle(data.x, data.y, 30, { restitution: 0.7 }));
-      })
-      socket.on('moved ball', data => {
-        // console.log('incoming', data)
-        // World.add(engineRef.current.world, Bodies.circle(50, 50, 30, { restitution: 0.7 }));
-        console.log(data);
-        const circle = engineRef.current.world.bodies.find(el => el.id === 1);
-        console.log('circle', circle)
-        circle.position.x = data.x;
-        circle.position.y = data.y;
-        console.log('circle', circle)
 
-        
-        
-        // World.add(engineRef.current.world, Bodies.circle(data.x, data.y, 30, { restitution: 0.7 }));
+        console.log(data)
+        Composite.add(engineRef.current.world, Bodies.circle(data.x, data.y, 30, { restitution: 0.7 }));
       })
+      socket.on('ball move', data => {
+          // const circle = engineRef.current.world.bodies[3];
+          // circle.position.x = data.x;
+          // circle.position.y = data.y;
+          // circle.frictionAir = 1;
+          // console.log(data.x, data.y)
+        
+      
+      }) 
       // console.log(engineRef.current)
     }, []);
     
     
 
-
+  const handleDisconnect =()=>{
+    socket.emit('leave')
+    setLanding(true)
+  }
   // const handleClick = async () => {
   //   console.log('clicked');
   //   // const synth = new Tone.Synth().toDestination();
@@ -133,10 +143,10 @@ const Scene = () => {
   //     });
     
   // }
-
+  
   return( 
     <>
-      {/* <button onClick={handleClick}>start synth</button> */}
+      <button onClick={handleDisconnect}>leave</button> 
       <div ref={sceneRef} />
       </>
   );
