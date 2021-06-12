@@ -7,8 +7,11 @@ import Matter from "matter-js";
 
 const Scene = ({room, setLanding}) => {
   // const [scene, setScene] = useState();
+
   const socket = useContext(SocketContext);
+  
   socket.currentRoom = room;
+  // console.log(socket)
   const sceneRef = useRef(null);
   const engineRef = useRef(null);
   // const [response, setResponse] = useState('');
@@ -21,7 +24,7 @@ const Scene = ({room, setLanding}) => {
   let MouseConstraint = Matter.MouseConstraint;
   let Composite = Matter.Composite;
   useEffect(() => {
-    
+    console.log('room from useEffect', room)
     engineRef.current = Engine.create({});
     engineRef.current.gravity.y = 1;
 
@@ -148,10 +151,15 @@ const Scene = ({room, setLanding}) => {
   //     });
     
   // }
+
+  const handleRoomStart = ()=> {
+    socket.emit('start', {id: socket.id})
+  }
   
   return( 
     <>
       <button onClick={handleDisconnect}>leave</button> 
+      <button onClick={handleRoomStart}>start</button>  
       <div ref={sceneRef} />
       </>
   );

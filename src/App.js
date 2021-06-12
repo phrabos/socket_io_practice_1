@@ -13,7 +13,7 @@ function App() {
   
   const [landing, setLanding] = useState(true);
   const [room, setRoom] = useState('');
-
+  console.log('room from app', room);
   if(landing) return (
     <SocketContext.Provider value = {socket}>
       <LandingPage setLanding={setLanding} setRoom={setRoom} room={room}/>

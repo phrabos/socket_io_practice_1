@@ -9,6 +9,7 @@ export default function LandingPage({setLanding, setRoom, room}) {
         socket.emit('collab', {id: socket.id})
         setLanding(false)
     }
+ 
     socket.on('set room', data=>{
         setRoom(data)
     }) 
