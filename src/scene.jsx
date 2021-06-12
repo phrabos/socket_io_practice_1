@@ -8,6 +8,7 @@ import Matter from "matter-js";
 const Scene = ({room, setLanding}) => {
   // const [scene, setScene] = useState();
   const socket = useContext(SocketContext);
+  socket.currentRoom = room;
   const sceneRef = useRef(null);
   const engineRef = useRef(null);
   // const [response, setResponse] = useState('');
@@ -19,7 +20,6 @@ const Scene = ({room, setLanding}) => {
   let Mouse = Matter.Mouse;
   let MouseConstraint = Matter.MouseConstraint;
   let Composite = Matter.Composite;
-
   useEffect(() => {
     
     engineRef.current = Engine.create({});
@@ -63,29 +63,34 @@ const Scene = ({room, setLanding}) => {
   
       
         Composite.add(engineRef.current.world, mouseConstraint);
+        Matter.Events.on(mouseConstraint, "mouseup", function(event) {
+          // console.log('outgoing-down', event.mouse.mousedownPosition);
+          socket.emit('ball dropped', socket.currentRoom, {x: event.mouse.mouseupPosition.x, y: event.mouse.mouseupPosition.y})
   
-      Matter.Events.on(mouseConstraint, "mouseup", function(event) {
-        console.log('mouseup event', event);
-        // console.log('outgoing-down', event.mouse.mousedownPosition);
-        socket.emit('ball dropped', room, {x: event.mouse.mouseupPosition.x, y: event.mouse.mouseupPosition.y})
+        });
 
-      });
+//       Matter.Events.on(mouseConstraint, "mouseup", function(event) {
+//         console.log('mouseup event', event);
+//         // console.log('outgoing-down', event.mouse.mousedownPosition);
+//         socket.emit('ball dropped', room, {x: event.mouse.mouseupPosition.x, y: event.mouse.mouseupPosition.y})
+
+//       });
       
 
-      Matter.Events.on(mouseConstraint, "startdrag", function(event) {
-        // console.log(event)
-        // console.log('outgoing-down', event.mouse.mousedownPosition)
-        socket.emit('ball move', {x: event.body.position.x, y: event.body.position.y})
-      });
-      Matter.Events.on(mouseConstraint, "enddrag", function(event) {
+//       Matter.Events.on(mouseConstraint, "startdrag", function(event) {
+//         // console.log(event)
+//         // console.log('outgoing-down', event.mouse.mousedownPosition)
+//         socket.emit('ball move', {x: event.body.position.x, y: event.body.position.y})
+//       });
+//       Matter.Events.on(mouseConstraint, "enddrag", function(event) {
 
-        // console.log(event)
-        // console.log('outgoing-down', event.mouse.mousedownPosition)
-        socket.emit('ball move', {x: event.body.position.x, y: event.body.position.y})
+//         // console.log(event)
+//         // console.log('outgoing-down', event.mouse.mousedownPosition)
+//         socket.emit('ball move', {x: event.body.position.x, y: event.body.position.y})
 
-      });
+//       });
+
       
-
       Matter.Runner.run(engineRef.current);
   
       Render.run(render);
@@ -105,7 +110,7 @@ const Scene = ({room, setLanding}) => {
       
       }) 
       // console.log(engineRef.current)
-    }, []);
+  }, []);
     
     
 
